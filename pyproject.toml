@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "madlad-finetuning"
+version = "0.1.0"
+description = ""
+authors = ["Mark <woodwardmw@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+transformers = "^4.44.2"
+datasets = "^3.0.0"
+accelerate = "^0.34.2"
+sentencepiece = "^0.2.0"
+protobuf = "^5.28.2"
+torch = "^2.4.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
