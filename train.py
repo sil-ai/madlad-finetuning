@@ -1,8 +1,11 @@
-from datasets import load_dataset, load_metric
+from datasets import load_dataset, Dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments, DataCollatorForSeq2Seq
 import pandas as pd
 import torch
+import evaluate
+from clearml import Task
 
+task = Task.init(project_name='IDX Translation Fine-tuning/IDX MADLAD Exp', task_name='madlad-finetuning')
 
 # Read the source and target files
 with open('data/source.txt', 'r', encoding='utf-8') as f:
@@ -25,11 +28,29 @@ df.to_csv('data/data.csv', index=False)
 
 
 
-dataset = load_dataset('csv', data_files={'train': 'data/data.csv'})
+# dataset = load_dataset('csv', data_files={'train': 'data/data.csv'}, download_mode='force_redownload')
+dataset = Dataset.from_pandas(df, split='train')
+
 
 model_name = 'jbochi/madlad400-3b-mt'
 tokenizer = T5Tokenizer.from_pretrained(model_name)
-model = T5ForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16)
+model = T5ForConditionalGeneration.from_pretrained(model_name)
+
+chrf = evaluate.load("chrf")
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+
+    # Decode the predictions and labels
+    decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
+    # Replace -100 in the labels as we can't decode them
+    labels = [[(label if label != -100 else tokenizer.pad_token_id) for label in label_seq] for label_seq in labels]
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+    
+    # Compute CHRF
+    result = chrf.compute(predictions=decoded_preds, references=decoded_labels)
+    
+    return {"chrf": result["score"]}
 
 source_lang = "en"
 target_lang = "sw"
@@ -49,7 +70,7 @@ def preprocess_function(examples):
 
 tokenized_dataset = dataset.map(preprocess_function, batched=True)
 
-split_dataset = tokenized_dataset['train'].train_test_split(test_size=0.1)
+split_dataset = tokenized_dataset.train_test_split(test_size=0.1)
 train_dataset = split_dataset['train']
 eval_dataset = split_dataset['test']
 
@@ -57,12 +78,12 @@ training_args = TrainingArguments(
     output_dir="./madlad400-finetuned",
     evaluation_strategy="epoch",
     learning_rate=5e-5,
-    per_device_train_batch_size=4,  # Adjust based on GPU memory
-    per_device_eval_batch_size=4,
+    per_device_train_batch_size=1,  # Adjust based on GPU memory
+    per_device_eval_batch_size=1,
     num_train_epochs=3,
     weight_decay=0.01,
     save_total_limit=2,
-    # predict_with_generate=True,
+    predict_with_generate=True,
     logging_dir='./logs',
     logging_steps=10,
     fp16=True,  # Use mixed precision if supported
@@ -71,16 +92,16 @@ training_args = TrainingArguments(
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
-bleu = load_metric("bleu")
+# bleu = load_metric("bleu")
 
-def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-    # BLEU expects a list of references for each prediction
-    references = [[label] for label in decoded_labels]
-    result = bleu.compute(predictions=decoded_preds, references=references)
-    return {"bleu": result["bleu"]}
+# def compute_metrics(eval_pred):
+#     predictions, labels = eval_pred
+#     decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
+#     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+#     # BLEU expects a list of references for each prediction
+#     references = [[label] for label in decoded_labels]
+#     result = bleu.compute(predictions=decoded_preds, references=references)
+#     return {"bleu": result["bleu"]}
 
 trainer = Trainer(
     model=model,
