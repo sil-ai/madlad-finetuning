@@ -19,7 +19,7 @@ load_dotenv()
 dataset = ClearMLDataset.get(dataset_id="85c436bb386847e29fe72e8449814b11")
 base_path = dataset.get_local_copy()
 source_file = f"{base_path}/en-NASB.txt"
-target_file = f"{base_path}/nih-NIH.txt"
+target_file = f"{base_path}/swh-ONEN.txt"
 
 
 # Read the source and target files
@@ -44,7 +44,7 @@ df = pd.DataFrame(
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
-df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+df = df.sample(frac=0.001, random_state=42).reset_index(drop=True)
 
 # Save to CSV
 df.to_csv("data/data.csv", index=False)
@@ -59,7 +59,7 @@ model = T5ForConditionalGeneration.from_pretrained(model_name)
 # Define LoRA configuration
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
-    inference_mode=False,
+    # inference_mode=False,
     r=8,  # Rank
     lora_alpha=32,
     lora_dropout=0.1,
@@ -74,10 +74,10 @@ chrf = evaluate.load("chrf")
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
-    top_predictions = np.argmax(predictions[0], axis=-1)
+    # top_predictions = np.argmax(predictions[0], axis=-1)
     
     # Decode the generated predictions
-    decoded_preds = tokenizer.batch_decode(top_predictions, skip_special_tokens=True)
+    decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
     
     # Replace -100 in the labels as they are used to mask tokens during loss computation
     labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
@@ -132,7 +132,7 @@ training_args = Seq2SeqTrainingArguments(
     num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
-    # predict_with_generate=True,
+    predict_with_generate=True,
     logging_dir='./logs',
     logging_steps=10,
     fp16=False,
