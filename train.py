@@ -9,10 +9,9 @@ from transformers import (
 )
 from peft import get_peft_model, LoraConfig, TaskType
 import pandas as pd
-import torch
 import numpy as np
 import evaluate
-from clearml import Task, Dataset as ClearMLDataset
+from clearml import Dataset as ClearMLDataset
 
 dataset = ClearMLDataset.get(dataset_id="85c436bb386847e29fe72e8449814b11")
 base_path = dataset.get_local_copy()
@@ -132,8 +131,8 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="epoch",
     learning_rate=1e-4,  # Adjusted learning rate
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
     num_train_epochs=10,
     weight_decay=0.01,
     save_total_limit=2,
