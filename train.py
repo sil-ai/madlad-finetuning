@@ -1,3 +1,4 @@
+import os
 from datasets import load_dataset, Dataset
 from transformers import (
     T5ForConditionalGeneration,
@@ -11,18 +12,21 @@ import pandas as pd
 import torch
 import numpy as np
 import evaluate
-from clearml import Task
+from clearml import Task, Dataset as ClearMLDataset
 
-task = Task.init(
-    project_name="IDX Translation Fine-tuning/IDX MADLAD Exp",
-    task_name="madlad-finetuning",
-)
+dataset = ClearMLDataset.get(dataset_id="85c436bb386847e29fe72e8449814b11")
+base_path = dataset.get_local_copy()
+print(f'{base_path=}')
+print(f'{os.listdir(base_path)=}')
+source_file = f"{base_path}/en-NASB.txt"
+target_file = f"{base_path}/swh-ONEN.txt"
+
 
 # Read the source and target files
-with open("data/en-NASB.txt", "r", encoding="utf-8") as f:
+with open(source_file, "r", encoding="utf-8") as f:
     source_sentences = f.readlines()
 
-with open("data/swh-ONEN.txt", "r", encoding="utf-8") as f:
+with open(target_file, "r", encoding="utf-8") as f:
     target_sentences = f.readlines()
 
 # Ensure both files have the same number of lines
@@ -55,8 +59,8 @@ lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
     inference_mode=False,
     r=8,  # Rank
-    lora_alpha=8,
-    lora_dropout=0.0,
+    lora_alpha=32,
+    lora_dropout=0.1,
 )
 
 # Apply LoRA to the model
@@ -128,8 +132,8 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="epoch",
     learning_rate=1e-4,  # Adjusted learning rate
-    per_device_train_batch_size=4,
-    per_device_eval_batch_size=4,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     num_train_epochs=10,
     weight_decay=0.01,
     save_total_limit=2,
