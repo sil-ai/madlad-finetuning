@@ -101,14 +101,10 @@ def preprocess_function(examples):
         truncation=True,
         padding='longest',
     )
-    print(f'Model inputs: {model_inputs}')
-
     # Tokenize targets using text_target
     labels = tokenizer(
         text_target=targets, max_length=256, truncation=True, padding="max_length"
     )
-    print(f'Labels: {labels}')
-
     # Assign labels for loss computation
     model_inputs["labels"] = labels["input_ids"]
 
@@ -129,15 +125,15 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="epoch",
     learning_rate=1e-4,  # Adjusted learning rate
-    per_device_train_batch_size=4,
-    per_device_eval_batch_size=4,
+    per_device_train_batch_size=2,
+    per_device_eval_batch_size=2,
     num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
     predict_with_generate=True,
     logging_dir='./logs',
     logging_steps=10,
-    fp16=False,
+    fp16=True,
     gradient_accumulation_steps=8,
 )
 
