@@ -71,9 +71,6 @@ chrf = evaluate.load("chrf")
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
-    print(f'{len(predictions)=}')
-    print(f'{predictions[0].shape=}')
-    print(f'{labels.shape=}')
     top_predictions = np.argmax(predictions[0], axis=-1)
     
     # Decode the generated predictions
@@ -101,7 +98,7 @@ def preprocess_function(examples):
         inputs,
         max_length=256,
         truncation=True,
-        padding='max_length',
+        padding='longest',
     )
     print(f'Model inputs: {model_inputs}')
 
@@ -140,11 +137,11 @@ training_args = Seq2SeqTrainingArguments(
     logging_dir='./logs',
     logging_steps=10,
     fp16=False,
-    gradient_accumulation_steps=2,
+    gradient_accumulation_steps=8,
 )
 
 data_collator = DataCollatorForSeq2Seq(
-    tokenizer, model=model, padding="max_length"
+    tokenizer, model=model, padding=True
 )
 
 trainer = Trainer(
