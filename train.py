@@ -127,8 +127,8 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="epoch",
     learning_rate=1e-5,  # Adjusted learning rate
-    per_device_train_batch_size=2,
-    per_device_eval_batch_size=2,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
     num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
@@ -156,4 +156,4 @@ trainer = Trainer(
 trainer.train()
 trainer.save_model("./madlad400-finetuned")
 trainer.evaluate()
-trainer.push_to_hub("sil-ai/madlad400-finetuned-engNASB-swhONEN", private=True)
+trainer.push_to_hub("sil-ai/madlad400-finetuned-engNASB-swhONEN")
