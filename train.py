@@ -74,6 +74,8 @@ chrf = evaluate.load("chrf")
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
+    if isinstance(predictions, tuple):
+        predictions = predictions[0]
     # top_predictions = np.argmax(predictions[0], axis=-1)
     
     # Decode the generated predictions
