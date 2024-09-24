@@ -44,7 +44,7 @@ df = pd.DataFrame(
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
-df = df.sample(frac=0.001, random_state=42).reset_index(drop=True)
+# df = df.sample(frac=0.001, random_state=42).reset_index(drop=True)
 
 # Save to CSV
 df.to_csv("data/data.csv", index=False)
