@@ -3,7 +3,7 @@ from datasets import load_dataset, Dataset
 from transformers import (
     T5ForConditionalGeneration,
     T5Tokenizer,
-    Trainer,
+    Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
     DataCollatorForSeq2Seq,
 )
@@ -146,7 +146,7 @@ data_collator = DataCollatorForSeq2Seq(
     tokenizer, model=model, padding=True
 )
 
-trainer = Trainer(
+trainer = Seq2SeqTrainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
