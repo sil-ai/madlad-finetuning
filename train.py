@@ -101,16 +101,17 @@ def preprocess_function(examples):
     targets = examples["target"]
     model_inputs = tokenizer(
         inputs,
+        text_target=targets,
         max_length=256,
         truncation=True,
         padding='longest',
     )
     # Tokenize targets using text_target
-    labels = tokenizer(
-        text_target=targets, max_length=256, truncation=True, padding="max_length"
-    )
-    # Assign labels for loss computation
-    model_inputs["labels"] = labels["input_ids"]
+    # labels = tokenizer(
+    #     text_target=targets, max_length=256, truncation=True, padding="max_length"
+    # )
+    # # Assign labels for loss computation
+    # model_inputs["labels"] = labels["input_ids"]
 
     return model_inputs
 
