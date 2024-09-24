@@ -44,6 +44,8 @@ df = pd.DataFrame(
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
+df = df.sample(frac=0.001, random_state=42).reset_index(drop=True)
+
 # Save to CSV
 df.to_csv("data/data.csv", index=False)
 
@@ -124,16 +126,16 @@ print(f'{eval_dataset=}')
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="epoch",
-    learning_rate=1e-4,  # Adjusted learning rate
+    learning_rate=1e-5,  # Adjusted learning rate
     per_device_train_batch_size=2,
     per_device_eval_batch_size=2,
     num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
-    predict_with_generate=True,
+    # predict_with_generate=True,
     logging_dir='./logs',
     logging_steps=10,
-    fp16=True,
+    fp16=False,
     gradient_accumulation_steps=8,
 )
 
