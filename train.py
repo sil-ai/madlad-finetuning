@@ -12,11 +12,12 @@ import pandas as pd
 import numpy as np
 import evaluate
 from clearml import Dataset as ClearMLDataset
+from dotenv import load_dotenv
+
+load_dotenv()
 
 dataset = ClearMLDataset.get(dataset_id="85c436bb386847e29fe72e8449814b11")
 base_path = dataset.get_local_copy()
-print(f'{base_path=}')
-print(f'{os.listdir(base_path)=}')
 source_file = f"{base_path}/en-NASB.txt"
 target_file = f"{base_path}/swh-ONEN.txt"
 
@@ -130,7 +131,7 @@ training_args = Seq2SeqTrainingArguments(
     learning_rate=1e-4,  # Adjusted learning rate
     per_device_train_batch_size=4,
     per_device_eval_batch_size=4,
-    num_train_epochs=10,
+    num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
     predict_with_generate=True,
@@ -157,3 +158,4 @@ trainer = Trainer(
 trainer.train()
 trainer.save_model("./madlad400-finetuned")
 trainer.evaluate()
+trainer.push_to_hub("madlad400-finetuned-engNASB-swhONEN")
