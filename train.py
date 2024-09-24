@@ -158,4 +158,4 @@ trainer = Trainer(
 trainer.train()
 trainer.save_model("./madlad400-finetuned")
 trainer.evaluate()
-trainer.push_to_hub("madlad400-finetuned-engNASB-swhONEN")
+trainer.push_to_hub("sil-ai/madlad400-finetuned-engNASB-swhONEN", private=True)
