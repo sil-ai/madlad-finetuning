@@ -128,19 +128,22 @@ print(f'{eval_dataset=}')
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
-    evaluation_strategy="steps",
-    eval_steps=50,
+    evaluation_strategy="epochs",
     learning_rate=1e-3,  # Adjusted learning rate
-    per_device_train_batch_size=4,
-    per_device_eval_batch_size=4,
+    warmup_steps=500,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
     num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
     predict_with_generate=True,
+    metric_for_best_model='chrf',
+    greater_is_better=True,
+    load_best_model_at_end=True,
     logging_dir='./logs',
     logging_steps=10,
     fp16=False,
-    gradient_accumulation_steps=8,
+    gradient_accumulation_steps=2,
 )
 
 data_collator = DataCollatorForSeq2Seq(
