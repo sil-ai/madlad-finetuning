@@ -174,7 +174,7 @@ training_args = Seq2SeqTrainingArguments(
     fp16=False,
     gradient_accumulation_steps=8,
     push_to_hub=True,
-    push_to_hub_model_id=f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}",
+    push_to_hub_model_id=f"madlad400-finetuned-{source_lang}-{target_lang}",
     push_to_hub_organization="sil-ai",
     push_to_hub_token=os.getenv("HF_TOKEN"),
 )
@@ -196,4 +196,4 @@ trainer = Seq2SeqTrainer(
 trainer.train()
 trainer.save_model("./madlad400-finetuned")
 trainer.evaluate()
-trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}")
+# trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}")
