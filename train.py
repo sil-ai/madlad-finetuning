@@ -27,6 +27,7 @@ parser.add_argument("--source", type=Path, help="Path to the source file")
 parser.add_argument("--target", type=Path, help="Path to the target file")
 parser.add_argument("--source-lang", type=str, help="Source language ISO code")
 parser.add_argument("--target-lang", type=str, help="Target language ISO code")
+parser.add_argument("--HF-TOKEN", type=str, help="Hugging Face API token")
 
 args = parser.parse_args()
 
@@ -156,6 +157,8 @@ eval_dataset = split_dataset["test"]
 print(f'{train_dataset=}')
 print(f'{eval_dataset=}')
 HF_TOKEN = os.getenv("HF_TOKEN")
+print(f'{HF_TOKEN=}')
+HF_TOKEN = args.HF_TOKEN
 print(f'{HF_TOKEN=}')
 # HF_TOKEN = config_obj.get("huggingface.token")
 # print(f'{HF_TOKEN=}')
