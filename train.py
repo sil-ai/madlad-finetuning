@@ -173,6 +173,10 @@ training_args = Seq2SeqTrainingArguments(
     logging_steps=10,
     fp16=False,
     gradient_accumulation_steps=8,
+    push_to_hub=True,
+    push_to_hub_model_id=f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}",
+    push_to_hub_organization="sil-ai",
+    push_to_hub_token=os.getenv("HF_TOKEN"),
 )
 
 data_collator = DataCollatorForSeq2Seq(
@@ -187,10 +191,6 @@ trainer = Seq2SeqTrainer(
     tokenizer=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
-    push_to_hub=True,
-    push_to_hub_model_id=f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}",
-    push_to_hub_organization="sil-ai",
-    push_to_hub_token=os.getenv("HF_TOKEN"),
 )
 
 trainer.train()
