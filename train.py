@@ -34,9 +34,6 @@ target_lang = args.target_lang if args.target_lang else args.target.stem.split("
 source_file = f"{base_path}/{args.source.stem}.txt"
 target_file = f"{base_path}/{args.target.stem}.txt"
 
-print(f"Source file: {source_file}")
-print(f"Target file: {target_file}")
-
 
 # Read the source and target files
 with open(source_file, "r", encoding="utf-8") as f:
@@ -58,7 +55,6 @@ df = pd.DataFrame(
     }
 )
 
-print(f'{df.head()}')
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
@@ -163,7 +159,7 @@ training_args = Seq2SeqTrainingArguments(
     save_strategy="epoch",
     learning_rate=1e-3,  # Adjusted learning rate
     warmup_steps=500,
-    per_device_train_batch_size=8,
+    per_device_train_batch_size=4,
     per_device_eval_batch_size=32,
     num_train_epochs=5,
     weight_decay=0.01,
@@ -175,7 +171,7 @@ training_args = Seq2SeqTrainingArguments(
     logging_dir='./logs',
     logging_steps=10,
     fp16=False,
-    gradient_accumulation_steps=2,
+    gradient_accumulation_steps=8,
 )
 
 data_collator = DataCollatorForSeq2Seq(
