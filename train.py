@@ -29,6 +29,8 @@ parser.add_argument("--dataset-id", type=str, help="ClearML dataset ID")
 
 args = parser.parse_args()
 
+print(f'{args.dataset_id=}')
+
 dataset = ClearMLDataset.get(dataset_id=args.dataset_id)
 base_path = dataset.get_local_copy()
 
@@ -137,7 +139,7 @@ if not text_is_in_vocab(tokenizer, language_token):
     print(f"Adding {language_token} to the vocabulary.")
     tokenizer.add_tokens([language_token])
     model.resize_token_embeddings(len(tokenizer))
-    
+
 
 def preprocess_function(examples):
     inputs = [language_token + src for src in examples["source"]]
