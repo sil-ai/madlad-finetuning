@@ -19,17 +19,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-dataset = ClearMLDataset.get(dataset_name="Vref Files", dataset_project="IDX Bible Data")
-base_path = dataset.get_local_copy()
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--source", type=Path, help="Path to the source file")
 parser.add_argument("--target", type=Path, help="Path to the target file")
 parser.add_argument("--source-lang", type=str, help="Source language ISO code")
 parser.add_argument("--target-lang", type=str, help="Target language ISO code")
 parser.add_argument("--HF-TOKEN", type=str, help="Hugging Face API token")
+parser.add_argument("--dataset-id", type=str, help="ClearML dataset ID")
 
 args = parser.parse_args()
+
+dataset = ClearMLDataset.get(dataset_id=args.dataset_id)
+base_path = dataset.get_local_copy()
 
 source_lang = args.source_lang if args.source_lang else args.source.stem.split("-")[0]
 target_lang = args.target_lang if args.target_lang else args.target.stem.split("-")[0]
