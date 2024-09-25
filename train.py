@@ -1,4 +1,5 @@
-import os
+import argparse
+from pathlib import Path
 from datasets import load_dataset, Dataset
 from transformers import (
     T5ForConditionalGeneration,
@@ -16,10 +17,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-dataset = ClearMLDataset.get(dataset_id="1fb5892063ae4b18b9724cd9ef931c06")
+dataset = ClearMLDataset.get(dataset_name="Vref Files", dataset_project="IDX Bible Data")
 base_path = dataset.get_local_copy()
-source_file = f"{base_path}/en-NASB.txt"
-target_file = f"{base_path}/nih-NIH.txt"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--source", type=Path, help="Path to the source file")
+parser.add_argument("--target", type=Path, help="Path to the target file")
+parser.add_argument("--source-lang", type=str, help="Source language ISO code")
+parser.add_argument("--target-lang", type=str, help="Target language ISO code")
+
+args = parser.parse_args()
+
+source_lang = args.source_lang if args.source_lang else args.source.stem.split("-")[0]
+target_lang = args.target_lang if args.target_lang else args.target.stem.split("-")[0]
+
+source_file = f"{base_path}/{args.source.stem}.txt"
+target_file = f"{base_path}/{args.target.stem}.txt"
+
+print(f"Source file: {source_file}")
+print(f"Target file: {target_file}")
 
 
 # Read the source and target files
@@ -41,6 +57,8 @@ df = pd.DataFrame(
         "target": [line.strip() for line in target_sentences],
     }
 )
+
+print(f'{df.head()}')
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
@@ -103,9 +121,11 @@ def compute_metrics(eval_pred):
     
     return {"chrf": result["score"]}
 
-source_lang = "en"
-target_lang = "nih"
-task_prefix = f"<2{target_lang}>"
+madlad_language_codes = {
+    'eng': 'en',
+}
+
+task_prefix = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
 
 def preprocess_function(examples):
     inputs = [task_prefix + src for src in examples["source"]]
@@ -175,4 +195,4 @@ trainer = Seq2SeqTrainer(
 trainer.train()
 trainer.save_model("./madlad400-finetuned")
 trainer.evaluate()
-trainer.push_to_hub("sil-ai/madlad400-finetuned-engNASB-nihNIH", private=True, token=True)
+trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}")
