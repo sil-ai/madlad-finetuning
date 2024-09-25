@@ -1,3 +1,4 @@
+import os
 import argparse
 from pathlib import Path
 from datasets import load_dataset, Dataset
@@ -186,6 +187,10 @@ trainer = Seq2SeqTrainer(
     tokenizer=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
+    push_to_hub=True,
+    push_to_hub_model_id=f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}",
+    push_to_hub_organization="sil-ai",
+    push_to_hub_token=os.getenv("HF_TOKEN"),
 )
 
 trainer.train()
