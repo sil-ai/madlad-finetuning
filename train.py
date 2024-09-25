@@ -46,6 +46,17 @@ df = df[(df["source"] != "") & (df["target"] != "")]
 
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
+# Find indices where either source or target is "<range>"
+to_drop = df[(df['source'] == '<range>') | (df['target'] == '<range>')].index
+
+# Include the row above for each match (if it exists)
+to_drop = to_drop.union(to_drop - 1)
+
+print(f"Drop {len(to_drop)} rows.")
+
+# Drop the rows
+df = df.drop(to_drop).reset_index(drop=True)
+
 # Save to CSV
 df.to_csv("data/data.csv", index=False)
 
@@ -60,7 +71,7 @@ model = T5ForConditionalGeneration.from_pretrained(model_name)
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
     # inference_mode=False,
-    r=8,  # Rank
+    r=32,  # Rank
     lora_alpha=32,
     lora_dropout=0.1,
 )
@@ -93,7 +104,7 @@ def compute_metrics(eval_pred):
     return {"chrf": result["score"]}
 
 source_lang = "en"
-target_lang = "sw"
+target_lang = "nih"
 task_prefix = f"<2{target_lang}>"
 
 def preprocess_function(examples):
@@ -133,7 +144,7 @@ training_args = Seq2SeqTrainingArguments(
     learning_rate=1e-3,  # Adjusted learning rate
     warmup_steps=500,
     per_device_train_batch_size=8,
-    per_device_eval_batch_size=16,
+    per_device_eval_batch_size=32,
     num_train_epochs=5,
     weight_decay=0.01,
     save_total_limit=2,
@@ -164,4 +175,4 @@ trainer = Seq2SeqTrainer(
 trainer.train()
 trainer.save_model("./madlad400-finetuned")
 trainer.evaluate()
-trainer.push_to_hub("sil-ai/madlad400-finetuned-engNASB-swhONEN")
+trainer.push_to_hub("sil-ai/madlad400-finetuned-engNASB-nihNIH", private=True, token=True)
