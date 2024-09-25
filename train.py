@@ -128,7 +128,7 @@ print(f'{eval_dataset=}')
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
-    evaluation_strategy="epochs",
+    evaluation_strategy="epoch",
     learning_rate=1e-3,  # Adjusted learning rate
     warmup_steps=500,
     per_device_train_batch_size=16,
