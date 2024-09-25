@@ -127,10 +127,20 @@ madlad_language_codes = {
     'swh': 'sw',
 }
 
-task_prefix = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
+def text_is_in_vocab(tokenizer, text):
+    tokens = tokenizer.tokenize(text)
+    return len(tokens) == 2 and tokens[1] == text
+
+language_token = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
+
+if not text_is_in_vocab(tokenizer, language_token):
+    print(f"Adding {language_token} to the vocabulary.")
+    tokenizer.add_tokens([language_token])
+    model.resize_token_embeddings(len(tokenizer))
+    
 
 def preprocess_function(examples):
-    inputs = [task_prefix + src for src in examples["source"]]
+    inputs = [language_token + src for src in examples["source"]]
     targets = examples["target"]
     model_inputs = tokenizer(
         inputs,
@@ -147,6 +157,10 @@ def preprocess_function(examples):
     # model_inputs["labels"] = labels["input_ids"]
 
     return model_inputs
+
+
+
+    
 
 
 tokenized_dataset = dataset.map(preprocess_function, batched=True)
