@@ -75,7 +75,7 @@ train_df = df.iloc[:split_idx].reset_index(drop=True)
 eval_df = df.iloc[split_idx:].reset_index(drop=True)
 
 # Load the Word Correspondences dataset
-wc_df = pd.read_csv("data/en-NASB-nih-NIH_top_source_scores_filtered.csv")
+wc_df = pd.read_csv(f"{base_path}/en-NASB-nih-NIH_top_source_scores_filtered.csv")
 
 # Append wc_df rows only to the training dataframe
 train_df = pd.concat([train_df, wc_df[['source', 'target']]], ignore_index=True)
