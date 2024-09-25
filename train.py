@@ -85,7 +85,8 @@ model = T5ForConditionalGeneration.from_pretrained(model_name)
 # Define LoRA configuration
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
-    # inference_mode=False,
+    inference_mode=False,
+    target_modules=["q", "v"],
     r=32,  # Rank
     lora_alpha=32,
     lora_dropout=0.1,
@@ -153,6 +154,7 @@ train_dataset = split_dataset["train"]
 eval_dataset = split_dataset["test"]
 print(f'{train_dataset=}')
 print(f'{eval_dataset=}')
+print(f'{os.getenv("HF_TOKEN")=}')
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
