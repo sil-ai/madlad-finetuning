@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import evaluate
 from clearml import Dataset as ClearMLDataset
+from clearml.config import config_obj 
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -155,6 +156,8 @@ eval_dataset = split_dataset["test"]
 print(f'{train_dataset=}')
 print(f'{eval_dataset=}')
 print(f'{os.getenv("HF_TOKEN")=}')
+HF_TOKEN = config_obj.get("huggingface.token")
+print(f'{HF_TOKEN=}')
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
@@ -178,7 +181,7 @@ training_args = Seq2SeqTrainingArguments(
     push_to_hub=True,
     push_to_hub_model_id=f"madlad400-finetuned-{source_lang}-{target_lang}",
     push_to_hub_organization="sil-ai",
-    push_to_hub_token=os.getenv("HF_TOKEN"),
+    push_to_hub_token=HF_TOKEN,
 )
 
 data_collator = DataCollatorForSeq2Seq(
