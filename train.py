@@ -123,6 +123,7 @@ def compute_metrics(eval_pred):
 
 madlad_language_codes = {
     'eng': 'en',
+    'swh': 'sw',
 }
 
 task_prefix = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
@@ -157,7 +158,6 @@ eval_dataset = split_dataset["test"]
 print(f'{train_dataset=}')
 print(f'{eval_dataset=}')
 HF_TOKEN = args.HF_TOKEN
-print(f'{HF_TOKEN=}')
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
