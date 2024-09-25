@@ -64,24 +64,25 @@ df = pd.DataFrame(
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
+# Shuffle df
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
-# Find indices where either source or target is "<range>"
-to_drop = df[(df['source'] == '<range>') | (df['target'] == '<range>')].index
+# Calculate split index for 90% training data
+split_idx = int(0.9 * len(df))
 
-# Include the row above for each match (if it exists)
-to_drop = to_drop.union(to_drop - 1)
+# Split df into training and evaluation sets
+train_df = df.iloc[:split_idx].reset_index(drop=True)
+eval_df = df.iloc[split_idx:].reset_index(drop=True)
 
-print(f"Drop {len(to_drop)} rows.")
+# Load the Word Correspondences dataset
+wc_df = pd.read_csv("data/en-NASB-nih-NIH_top_source_scores_filtered.csv")
 
-# Drop the rows
-df = df.drop(to_drop).reset_index(drop=True)
+# Append wc_df rows only to the training dataframe
+train_df = pd.concat([train_df, wc_df[['source', 'target']]], ignore_index=True)
 
-# Save to CSV
-df.to_csv("data/data.csv", index=False)
-
-# Load dataset
-dataset = Dataset.from_pandas(df, split="train")
+# Convert dataframes to Hugging Face Datasets
+train_dataset = Dataset.from_pandas(train_df)
+eval_dataset = Dataset.from_pandas(eval_df)
 
 model_name = "jbochi/madlad400-3b-mt"
 tokenizer = T5Tokenizer.from_pretrained(model_name)
@@ -151,12 +152,6 @@ def preprocess_function(examples):
         truncation=True,
         padding='longest',
     )
-    # Tokenize targets using text_target
-    # labels = tokenizer(
-    #     text_target=targets, max_length=256, truncation=True, padding="max_length"
-    # )
-    # # Assign labels for loss computation
-    # model_inputs["labels"] = labels["input_ids"]
 
     return model_inputs
 
@@ -165,15 +160,12 @@ def preprocess_function(examples):
     
 
 
-tokenized_dataset = dataset.map(preprocess_function, batched=True)
+tokenized_train_dataset = train_dataset.map(preprocess_function, batched=True)
+tokenized_eval_dataset = eval_dataset.map(preprocess_function, batched=True)
+print(f'{tokenized_train_dataset[0]=}')
 
-print(f'{tokenized_dataset[0]=}')
-
-split_dataset = tokenized_dataset.train_test_split(test_size=0.1)
-train_dataset = split_dataset["train"]
-eval_dataset = split_dataset["test"]
-print(f'{train_dataset=}')
-print(f'{eval_dataset=}')
+print(f'{tokenized_train_dataset=}')
+print(f'{tokenized_eval_dataset=}')
 HF_TOKEN = args.HF_TOKEN
 
 training_args = Seq2SeqTrainingArguments(
@@ -199,6 +191,7 @@ training_args = Seq2SeqTrainingArguments(
     push_to_hub_model_id=f"madlad400-finetuned-{source_lang}-{target_lang}",
     push_to_hub_organization="sil-ai",
     push_to_hub_token=HF_TOKEN,
+    hub_private_repo=True,
 )
 
 data_collator = DataCollatorForSeq2Seq(
@@ -208,14 +201,14 @@ data_collator = DataCollatorForSeq2Seq(
 trainer = Seq2SeqTrainer(
     model=model,
     args=training_args,
-    train_dataset=train_dataset,
-    eval_dataset=eval_dataset,
+    train_dataset=tokenized_train_dataset,
+    eval_dataset=tokenized_eval_dataset,
     tokenizer=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
 )
 
 trainer.train()
-trainer.save_model("./madlad400-finetuned")
+trainer.save_model("./madlad400-finetuned-{source_lang}-{target_lang}")
 trainer.evaluate()
-# trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}")
+# trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}", private=True, token=HF_TOKEN)
