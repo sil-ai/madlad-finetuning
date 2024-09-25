@@ -156,12 +156,8 @@ train_dataset = split_dataset["train"]
 eval_dataset = split_dataset["test"]
 print(f'{train_dataset=}')
 print(f'{eval_dataset=}')
-HF_TOKEN = os.getenv("HF_TOKEN")
-print(f'{HF_TOKEN=}')
 HF_TOKEN = args.HF_TOKEN
 print(f'{HF_TOKEN=}')
-# HF_TOKEN = config_obj.get("huggingface.token")
-# print(f'{HF_TOKEN=}')
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
