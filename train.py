@@ -101,6 +101,10 @@ lora_config = LoraConfig(
 # Apply LoRA to the model
 model = get_peft_model(model, lora_config)
 
+# Unfreeze the embeddings layer
+for param in model.shared.parameters():
+    param.requires_grad = True
+
 model.print_trainable_parameters()
 
 chrf = evaluate.load("chrf")
