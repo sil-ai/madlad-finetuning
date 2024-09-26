@@ -103,18 +103,20 @@ model = T5ForConditionalGeneration.from_pretrained(model_name)
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
     inference_mode=False,
-    target_modules=["q", "v"],
-    r=32,  # Rank
-    lora_alpha=32,
+    target_modules=["q", "k", "v", "o", "wi", "wo"],
+    r=64,  # Increased Rank
+    lora_alpha=64,
     lora_dropout=0.1,
+    bias="all",
 )
 
 # Apply LoRA to the model
 model = get_peft_model(model, lora_config)
 
-# Unfreeze the embeddings layer
-for param in model.shared.parameters():
-    param.requires_grad = True
+# Unfreeze additional parameters
+for name, param in model.named_parameters():
+    if "layer_norm" in name or "layernorm" in name or "encoder.block.22" in name or "encoder.block.23" in name or "decoder.block.22" in name or "decoder.block.23" in name:
+        param.requires_grad = True
 
 model.print_trainable_parameters()
 
@@ -187,13 +189,11 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="epoch",
     save_strategy="epoch",
-    learning_rate=5e-03,
-    warmup_steps=500,
+    learning_rate=1e-2,
     per_device_train_batch_size=4,
     per_device_eval_batch_size=32,
     num_train_epochs=15,
     weight_decay=1e-5,
-    label_smoothing_factor=0.2,
     save_total_limit=2,
     predict_with_generate=True,
     metric_for_best_model='chrf',
@@ -201,7 +201,7 @@ training_args = Seq2SeqTrainingArguments(
     load_best_model_at_end=True,
     logging_dir='./logs',
     logging_steps=10,
-    fp16=False,
+    fp16=True,
     gradient_accumulation_steps=8,
     push_to_hub=True,
     push_to_hub_model_id=f"madlad400-finetuned-{source_lang}-{target_lang}",
