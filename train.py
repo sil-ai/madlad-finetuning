@@ -64,6 +64,17 @@ df = pd.DataFrame(
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
 
+# Find indices where either source or target is "<range>"
+to_drop = df[(df['source'] == '<range>') | (df['target'] == '<range>')].index
+
+# Include the row above for each match (if it exists)
+to_drop = to_drop.union(to_drop - 1)
+
+print(f"Drop {len(to_drop)} rows.")
+
+# Drop the rows
+df = df.drop(to_drop).reset_index(drop=True)
+
 # Shuffle df
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
@@ -78,7 +89,7 @@ eval_df = df.iloc[split_idx:].reset_index(drop=True)
 wc_df = pd.read_csv(f"{base_path}/en-NASB-nih-NIH_top_source_scores_filtered.csv")
 
 # Append wc_df rows only to the training dataframe
-train_df = pd.concat([train_df, wc_df[['source', 'target']]], ignore_index=True)
+train_df = pd.concat([train_df, wc_df[['source', 'target']]], ignore_index=True).sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Convert dataframes to Hugging Face Datasets
 train_dataset = Dataset.from_pandas(train_df)
