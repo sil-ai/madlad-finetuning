@@ -103,11 +103,11 @@ model = T5ForConditionalGeneration.from_pretrained(model_name)
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
     inference_mode=False,
-    target_modules=["q", "k", "v", "o", "wi", "wo"],
+    target_modules=["q", "k"],
     r=64,  # Increased Rank
     lora_alpha=64,
     lora_dropout=0.1,
-    # bias="all",
+    bias="all",
 )
 
 # Apply LoRA to the model
