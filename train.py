@@ -103,11 +103,12 @@ model = T5ForConditionalGeneration.from_pretrained(model_name)
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
     inference_mode=False,
-    target_modules=["q", "k"],
-    r=64,  # Increased Rank
+    target_modules=["q", "v", "k", "o", "wi_0", "wi_1", "wo"],
+    modules_to_save=["embed_tokens", "lm_head"],
+    r=4,
     lora_alpha=64,
-    lora_dropout=0.1,
-    bias="all",
+    lora_dropout=32,
+    # bias="all",
 )
 
 # Apply LoRA to the model
@@ -115,6 +116,7 @@ model = get_peft_model(model, lora_config)
 
 # Unfreeze additional parameters
 for name, param in model.named_parameters():
+    print(name)
     if "layer_norm" in name or "layernorm" in name or "encoder.block.22" in name or "encoder.block.23" in name or "decoder.block.22" in name or "decoder.block.23" in name:
         param.requires_grad = True
 
