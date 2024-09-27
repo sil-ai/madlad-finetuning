@@ -133,8 +133,8 @@ model = get_peft_model(model, lora_config)
 # Unfreeze additional parameters
 for name, param in model.named_parameters():
     print(name)
-    if "layer_norm" in name or "layernorm" in name or "encoder.block.22" in name or "encoder.block.23" in name or "decoder.block.22" in name or "decoder.block.23" in name:
-        param.requires_grad = True
+    # if "layer_norm" in name:
+        # param.requires_grad = True
 
 model.print_trainable_parameters()
 
