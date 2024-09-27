@@ -189,9 +189,10 @@ HF_TOKEN = args.HF_TOKEN
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
-    evaluation_strategy="epoch",
+    evaluation_strategy="steps",
+    eval_steps=100,
     save_strategy="epoch",
-    learning_rate=1e-2,
+    learning_rate=5e-4,
     per_device_train_batch_size=4,
     per_device_eval_batch_size=32,
     num_train_epochs=15,
