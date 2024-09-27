@@ -121,10 +121,10 @@ lora_config = LoraConfig(
     inference_mode=False,
     target_modules=["q", "v", "k", "o", "wi_0", "wi_1", "wo"],
     modules_to_save=["embed_tokens", "lm_head"],
-    r=4,
+    r=8,
     lora_alpha=32,
-    lora_dropout=0.1,
-    # bias="all",
+    lora_dropout=0.05,
+    bias="none",
 )
 
 # Apply LoRA to the model
@@ -133,8 +133,8 @@ model = get_peft_model(model, lora_config)
 # Unfreeze additional parameters
 for name, param in model.named_parameters():
     print(name)
-    # if "layer_norm" in name:
-        # param.requires_grad = True
+    if "layer_norm" in name:
+        param.requires_grad = True
 
 model.print_trainable_parameters()
 
@@ -162,7 +162,7 @@ def compute_metrics(eval_pred):
 
 
 def preprocess_function(examples):
-    inputs = [language_token + src for src in examples["source"]]
+    inputs = [f"{language_token} {src}" for src in examples["source"]]    
     targets = examples["target"]
     model_inputs = tokenizer(
         inputs,
