@@ -106,8 +106,8 @@ lora_config = LoraConfig(
     target_modules=["q", "v", "k", "o", "wi_0", "wi_1", "wo"],
     modules_to_save=["embed_tokens", "lm_head"],
     r=4,
-    lora_alpha=64,
-    lora_dropout=32,
+    lora_alpha=32,
+    lora_dropout=0.1,
     # bias="all",
 )
 
