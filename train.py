@@ -16,8 +16,7 @@ import evaluate
 from clearml import Dataset as ClearMLDataset
 from clearml.config import config_obj 
 from dotenv import load_dotenv
-import torch
-import torch.nn.functional as F
+import random
 
 load_dotenv()
 
@@ -123,7 +122,7 @@ lora_config = LoraConfig(
     inference_mode=False,
     target_modules=["q", "v", "k", "o", "wi_0", "wi_1", "wo"],
     modules_to_save=["embed_tokens", "lm_head"],
-    r=8,
+    r=16,
     lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
@@ -159,6 +158,16 @@ def compute_metrics(eval_pred):
     
     # Compute CHRF score
     result = chrf.compute(predictions=decoded_preds, references=decoded_labels)
+
+    # Print first ten sample sentences
+    sample_size = min(10, len(decoded_preds))
+    
+    print("\n----- First 10 Sample Translations -----")
+    for idx in range(sample_size):
+        print(f"Source:      {tokenized_eval_dataset[idx]['source']}")
+        print(f"Target:      {decoded_labels[idx]}")
+        print(f"Prediction:  {decoded_preds[idx]}")
+        print("---")
     
     return {"chrf": result["score"]}
 
@@ -177,22 +186,6 @@ def preprocess_function(examples):
     return model_inputs
 
 
-
-def custom_loss_with_repetition_penalty(logits, labels, alpha=0.1):
-    # Standard cross-entropy loss
-    ce_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
-    
-    # Repetition penalty
-    probs = F.softmax(logits, dim=-1)
-    rep_penalty = -torch.log(1 - (probs * probs).sum(dim=-1)).mean()
-    
-    # Combine losses
-    total_loss = ce_loss + alpha * rep_penalty
-    
-    return total_loss
-    
-
-
 tokenized_train_dataset = train_dataset.map(preprocess_function, batched=True)
 tokenized_eval_dataset = eval_dataset.map(preprocess_function, batched=True)
 print(f'{tokenized_train_dataset[0]=}')
@@ -205,7 +198,7 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./madlad400-finetuned-lora",
     evaluation_strategy="steps",
     eval_steps=100,
-    save_strategy="steps",
+    save_strategy="epoch",
     learning_rate=5e-4,
     per_device_train_batch_size=4,
     per_device_eval_batch_size=32,
@@ -239,7 +232,6 @@ trainer = Seq2SeqTrainer(
     tokenizer=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
-    loss_fn=custom_loss_with_repetition_penalty,
 )
 
 trainer.train()
