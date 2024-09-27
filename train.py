@@ -107,7 +107,7 @@ lora_config = LoraConfig(
     r=64,  # Increased Rank
     lora_alpha=64,
     lora_dropout=0.1,
-    bias="all",
+    # bias="all",
 )
 
 # Apply LoRA to the model
