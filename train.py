@@ -99,6 +99,22 @@ model_name = "jbochi/madlad400-3b-mt"
 tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name)
 
+def text_is_in_vocab(tokenizer, text):
+    tokens = tokenizer.tokenize(text)
+    return len(tokens) == 2 and tokens[1] == text
+
+madlad_language_codes = {
+    'eng': 'en',
+    'swh': 'sw',
+}
+
+language_token = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
+
+if not text_is_in_vocab(tokenizer, language_token):
+    print(f"Adding {language_token} to the vocabulary.")
+    tokenizer.add_tokens([language_token])
+    model.resize_token_embeddings(len(tokenizer))
+
 # Define LoRA configuration
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
@@ -143,22 +159,6 @@ def compute_metrics(eval_pred):
     result = chrf.compute(predictions=decoded_preds, references=decoded_labels)
     
     return {"chrf": result["score"]}
-
-madlad_language_codes = {
-    'eng': 'en',
-    'swh': 'sw',
-}
-
-def text_is_in_vocab(tokenizer, text):
-    tokens = tokenizer.tokenize(text)
-    return len(tokens) == 2 and tokens[1] == text
-
-language_token = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
-
-if not text_is_in_vocab(tokenizer, language_token):
-    print(f"Adding {language_token} to the vocabulary.")
-    tokenizer.add_tokens([language_token])
-    model.resize_token_embeddings(len(tokenizer))
 
 
 def preprocess_function(examples):
