@@ -16,6 +16,8 @@ import evaluate
 from clearml import Dataset as ClearMLDataset
 from clearml.config import config_obj 
 from dotenv import load_dotenv
+import torch
+import torch.nn.functional as F
 
 load_dotenv()
 
@@ -176,6 +178,18 @@ def preprocess_function(examples):
 
 
 
+def custom_loss_with_repetition_penalty(logits, labels, alpha=0.1):
+    # Standard cross-entropy loss
+    ce_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
+    
+    # Repetition penalty
+    probs = F.softmax(logits, dim=-1)
+    rep_penalty = -torch.log(1 - (probs * probs).sum(dim=-1)).mean()
+    
+    # Combine losses
+    total_loss = ce_loss + alpha * rep_penalty
+    
+    return total_loss
     
 
 
@@ -225,6 +239,7 @@ trainer = Seq2SeqTrainer(
     tokenizer=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
+    loss_fn=custom_loss_with_repetition_penalty,
 )
 
 trainer.train()
