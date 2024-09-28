@@ -204,6 +204,7 @@ training_args = Seq2SeqTrainingArguments(
     per_device_eval_batch_size=32,
     num_train_epochs=15,
     weight_decay=1e-5,
+    warmup_steps=500,
     save_total_limit=2,
     predict_with_generate=True,
     metric_for_best_model='chrf',
