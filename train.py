@@ -98,7 +98,7 @@ eval_dataset = Dataset.from_pandas(eval_df)
 
 model_name = "jbochi/madlad400-3b-mt"
 tokenizer = T5Tokenizer.from_pretrained(model_name)
-model = T5ForConditionalGeneration.from_pretrained(model_name)
+model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=256)
 
 def text_is_in_vocab(tokenizer, text):
     tokens = tokenizer.tokenize(text)
@@ -207,6 +207,7 @@ training_args = Seq2SeqTrainingArguments(
     warmup_steps=500,
     save_total_limit=2,
     predict_with_generate=True,
+    generation_max_length=256,
     metric_for_best_model='chrf',
     greater_is_better=True,
     load_best_model_at_end=True,
