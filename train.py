@@ -122,7 +122,7 @@ lora_config = LoraConfig(
     inference_mode=False,
     target_modules=["q", "v", "k", "o", "wi_0", "wi_1", "wo"],
     modules_to_save=["embed_tokens", "lm_head"],
-    r=16,
+    r=8,
     lora_alpha=32,
     lora_dropout=0.05,
     bias="none",
@@ -238,5 +238,5 @@ trainer = Seq2SeqTrainer(
 
 trainer.train()
 trainer.save_model(f"./madlad400-finetuned-{source_lang}-{target_lang}")
-trainer.evaluate()
+# trainer.evaluate()
 # trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}", private=True, token=HF_TOKEN)
