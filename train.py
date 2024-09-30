@@ -27,9 +27,9 @@ parser.add_argument("--source-lang", type=str, help="Source language ISO code")
 parser.add_argument("--target-lang", type=str, help="Target language ISO code")
 parser.add_argument("--HF-TOKEN", type=str, help="Hugging Face API token")
 parser.add_argument("--dataset-id", type=str, help="ClearML dataset ID")
-parser.add_argument("--lora_r ", type=int, help="LoRA r value")
-parser.add_argument("--lora-alpha", type=int, help="LoRA alpha value")
-parser.add_argument("--lora-dropout", type=float, help="LoRA dropout value")
+parser.add_argument("--lora_r", type=int, help="LoRA r value", default=8)
+parser.add_argument("--lora-alpha", type=int, help="LoRA alpha value", default=32)
+parser.add_argument("--lora-dropout", type=float, help="LoRA dropout value", default=0.05)
 
 args = parser.parse_args()
 
@@ -123,9 +123,9 @@ lora_config = LoraConfig(
     inference_mode=False,
     target_modules=["q", "v", "k", "o", "wi_0", "wi_1", "wo"],
     modules_to_save=["embed_tokens", "lm_head"],
-    r=args.lora_r if args.lora_r else 8,
-    lora_alpha=args.lora_alpha if args.lora_alpha else 32,
-    lora_dropout=args.lora_dropout if args.lora_dropout else 0.05,
+    r=args.lora_r,
+    lora_alpha=args.lora_alpha,
+    lora_dropout=args.lora_dropout,
     bias="none",
 )
 
