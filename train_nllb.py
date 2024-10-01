@@ -4,6 +4,7 @@ from pathlib import Path
 from datasets import load_dataset, Dataset
 from transformers import (
     T5ForConditionalGeneration,
+    AutoModelForSeq2SeqLM,
     NllbTokenizer,
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
@@ -100,8 +101,8 @@ eval_dataset = Dataset.from_pandas(eval_df)
 # model_name = "jbochi/madlad400-3b-mt"
 model_name = "facebook/nllb-200-3.3B"
 
-tokenizer = T5Tokenizer.from_pretrained(model_name)
-model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=256)
+tokenizer = NllbTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name, max_length=256)
 
 def text_is_in_vocab(tokenizer, text):
     tokens = tokenizer.tokenize(text)
