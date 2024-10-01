@@ -98,6 +98,10 @@ wc_df = pd.read_csv(f"{base_path}/en-NASB-nih-NIH_top_source_scores_filtered.csv
 train_dataset = Dataset.from_pandas(train_df)
 eval_dataset = Dataset.from_pandas(eval_df)
 
+print(f'{train_dataset[0]=}')
+print(f'{eval_dataset[0]=}')
+
+
 # model_name = "jbochi/madlad400-3b-mt"
 model_name = "facebook/nllb-200-3.3B"
 
@@ -167,13 +171,17 @@ def compute_metrics(eval_pred):
 def preprocess_function(examples):
     inputs = examples["source"]
     targets = examples["target"]
-    model_inputs = tokenizer(
-        inputs,
-        text_target=targets,
-        max_length=256,
-        truncation=True,
-        padding='longest',
-    )
+    try:
+        model_inputs = tokenizer(
+            inputs,
+            text_target=targets,
+            max_length=256,
+            truncation=True,
+            padding='longest',
+        )
+    except Exception as e:
+        print(f"Error processing: {inputs}, {targets}")
+        raise e
 
     return model_inputs
 
