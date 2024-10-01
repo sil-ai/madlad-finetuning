@@ -169,8 +169,8 @@ def compute_metrics(eval_pred):
 
 
 def preprocess_function(examples):
-    inputs = examples["source"]
-    targets = examples["target"]
+    inputs = [str(source) for source in examples["source"]]
+    targets = [str(target) for target in examples["target"]]
     try:
         model_inputs = tokenizer(
             inputs,
