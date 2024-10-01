@@ -239,6 +239,6 @@ trainer = Seq2SeqTrainer(
 )
 
 trainer.train()
-trainer.save_model(f"./madlad400-finetuned-{source_lang}-{target_lang}")
+# trainer.save_model(f"./madlad400-finetuned-{source_lang}-{target_lang}")
 # trainer.evaluate()
 # trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}", private=True, token=HF_TOKEN)
