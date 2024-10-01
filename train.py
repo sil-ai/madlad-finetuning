@@ -195,51 +195,50 @@ print(f'{tokenized_train_dataset=}')
 print(f'{tokenized_eval_dataset=}')
 HF_TOKEN = args.HF_TOKEN
 
-# training_args = Seq2SeqTrainingArguments(
-#     output_dir="./madlad400-finetuned-lora",
-#     evaluation_strategy="steps",
-#     eval_steps=400,
-#     save_strategy="steps",
-#     save_steps=400,
-#     learning_rate=5e-4,
-#     per_device_train_batch_size=4,
-#     per_device_eval_batch_size=32,
-#     num_train_epochs=15,
-#     weight_decay=1e-5,
-#     warmup_steps=500,
-#     save_total_limit=2,
-#     predict_with_generate=True,
-#     generation_max_length=256,
-#     metric_for_best_model='chrf',
-#     greater_is_better=True,
-#     load_best_model_at_end=True,
-#     logging_dir='./logs',
-#     logging_steps=10,
-#     fp16=False,
-#     gradient_accumulation_steps=8,
-#     push_to_hub=True,
-#     push_to_hub_model_id=f"madlad400-finetuned-{source_lang}-{target_lang}",
-#     push_to_hub_organization="sil-ai",
-#     push_to_hub_token=HF_TOKEN,
-#     hub_private_repo=True,
-# )
+training_args = Seq2SeqTrainingArguments(
+    output_dir="./madlad400-finetuned-lora",
+    evaluation_strategy="steps",
+    eval_steps=400,
+    save_strategy="steps",
+    save_steps=400,
+    learning_rate=5e-4,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=32,
+    num_train_epochs=15,
+    weight_decay=1e-5,
+    warmup_steps=500,
+    save_total_limit=2,
+    predict_with_generate=True,
+    generation_max_length=256,
+    metric_for_best_model='chrf',
+    greater_is_better=True,
+    load_best_model_at_end=True,
+    logging_dir='./logs',
+    logging_steps=10,
+    fp16=False,
+    gradient_accumulation_steps=8,
+    push_to_hub=True,
+    push_to_hub_model_id=f"madlad400-finetuned-{source_lang}-{target_lang}",
+    push_to_hub_organization="sil-ai",
+    push_to_hub_token=HF_TOKEN,
+    hub_private_repo=True,
+)
 
-# data_collator = DataCollatorForSeq2Seq(
-#     tokenizer, model=model, padding=True
-# )
+data_collator = DataCollatorForSeq2Seq(
+    tokenizer, model=model, padding=True
+)
 
-# trainer = Seq2SeqTrainer(
-#     model=model,
-#     args=training_args,
-#     train_dataset=tokenized_train_dataset,
-#     eval_dataset=tokenized_eval_dataset,
-#     tokenizer=tokenizer,
-#     data_collator=data_collator,
-#     compute_metrics=compute_metrics,
-# )
+trainer = Seq2SeqTrainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_train_dataset,
+    eval_dataset=tokenized_eval_dataset,
+    tokenizer=tokenizer,
+    data_collator=data_collator,
+    compute_metrics=compute_metrics,
+)
 
-# trainer.train()
-# trainer.save_model(f"./madlad400-finetuned-{source_lang}-{target_lang}")
+trainer.train()
+trainer.save_model(f"./madlad400-finetuned-{source_lang}-{target_lang}")
 # trainer.evaluate()
 # trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}", private=True, token=HF_TOKEN)
-model.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}-test", private=True, token=HF_TOKEN)
