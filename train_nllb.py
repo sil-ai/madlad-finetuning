@@ -108,6 +108,18 @@ model_name = "facebook/nllb-200-3.3B"
 tokenizer = NllbTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name, max_length=256)
 
+def add_lang_code_to_tokenizer(tokenizer: NllbTokenizer, lang_code: str) -> None:
+    tokenizer.add_special_tokens({"additional_special_tokens": [lang_code]}, replace_additional_special_tokens=False)
+    lang_id = tokenizer.convert_tokens_to_ids(lang_code)
+    tokenizer.lang_code_to_id[lang_code] = lang_id
+    tokenizer.id_to_lang_code[lang_id] = lang_code
+    tokenizer.fairseq_tokens_to_ids[lang_code] = lang_id
+    tokenizer.fairseq_ids_to_tokens[lang_id] = lang_code
+
+add_lang_code_to_tokenizer(tokenizer, "eng_Latn")
+add_lang_code_to_tokenizer(tokenizer, "nih_Latn")
+
+
 def text_is_in_vocab(tokenizer, text):
     tokens = tokenizer.tokenize(text)
     return len(tokens) == 2 and tokens[1] == text
