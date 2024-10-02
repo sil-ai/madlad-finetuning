@@ -10,6 +10,8 @@ from transformers import (
     Seq2SeqTrainingArguments,
     DataCollatorForSeq2Seq,
 )
+from transformers.convert_slow_tokenizer import convert_slow_tokenizer
+from transformers import NllbTokenizerFast
 from peft import get_peft_model, LoraConfig, TaskType
 import pandas as pd
 import numpy as np
@@ -107,6 +109,9 @@ model_name = "facebook/nllb-200-3.3B"
 
 tokenizer = NllbTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name, max_length=256)
+
+tokenizer = convert_slow_tokenizer(tokenizer)
+tokenizer = NllbTokenizerFast(tokenizer_object=tokenizer)
 
 def add_lang_code_to_tokenizer(tokenizer: NllbTokenizer, lang_code: str) -> None:
     tokenizer.add_special_tokens({"additional_special_tokens": [lang_code]}, replace_additional_special_tokens=False)
