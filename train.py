@@ -23,6 +23,7 @@ load_dotenv()
 parser = argparse.ArgumentParser()
 parser.add_argument("--source", type=Path, help="Path to the source file")
 parser.add_argument("--target", type=Path, help="Path to the target file")
+parser.add_argument("--source-2", type=Path, help="Path to the second source file")
 parser.add_argument("--source-lang", type=str, help="Source language ISO code")
 parser.add_argument("--target-lang", type=str, help="Target language ISO code")
 parser.add_argument("--HF-TOKEN", type=str, help="Hugging Face API token")
@@ -43,13 +44,17 @@ target_lang = args.target_lang if args.target_lang else args.target.stem.split("
 source_file = f"{base_path}/{args.source.stem}.txt"
 target_file = f"{base_path}/{args.target.stem}.txt"
 
-
 # Read the source and target files
 with open(source_file, "r", encoding="utf-8") as f:
     source_sentences = f.readlines()
 
 with open(target_file, "r", encoding="utf-8") as f:
     target_sentences = f.readlines()
+
+if args.source_2:
+    source_file_2 = f"{base_path}/{args.source_2.stem}.txt"
+    with open(source_file_2, "r", encoding="utf-8") as f:
+        source_sentences_2 = f.readlines()
 
 # Ensure both files have the same number of lines
 assert len(source_sentences) == len(
@@ -61,6 +66,17 @@ df = pd.DataFrame(
     {
         "source": [line.strip() for line in source_sentences],
         "target": [line.strip() for line in target_sentences],
+    }
+)
+
+if args.source_2:
+    df['source_2'] = [line.strip() for line in source_sentences_2]
+
+df = pd.DataFrame(
+    {
+        "source": df["source"].tolist() + df["source_2"].tolist(),
+        "target": df["target"].tolist() * 2,
+        "index": df.index.tolist() * 2,
     }
 )
 
@@ -76,17 +92,20 @@ to_drop = to_drop.union(to_drop - 1)
 print(f"Drop {len(to_drop)} rows.")
 
 # Drop the rows
-df = df.drop(to_drop).reset_index(drop=True)
+unique_indices = df["index"].unique()
+random.shuffle(unique_indices)  # Shuffle the indices for splitting
 
-# Shuffle df
-df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+# Split by index: 90% train, 10% eval
+split_idx = int(0.9 * len(unique_indices))
+train_indices = unique_indices[:split_idx]
+eval_indices = unique_indices[split_idx:]
 
-# Calculate split index for 90% training data
-split_idx = int(0.9 * len(df))
+# Use these indices to filter the DataFrame into train and eval sets
+train_df = df[df["index"].isin(train_indices)].reset_index(drop=True)
+eval_df = df[df["index"].isin(eval_indices)].reset_index(drop=True)
 
-# Split df into training and evaluation sets
-train_df = df.iloc[:split_idx].reset_index(drop=True)
-eval_df = df.iloc[split_idx:].reset_index(drop=True)
+print(f'{train_df.head(50)=}')
+print(f'{eval_df.head(50)=}')
 
 # Load the Word Correspondences dataset
 wc_df = pd.read_csv(f"{base_path}/en-NASB-nih-NIH_top_source_scores_filtered.csv")
