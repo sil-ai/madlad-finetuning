@@ -99,8 +99,7 @@ if args.data_aug:
 train_dataset = Dataset.from_pandas(train_df)
 eval_dataset = Dataset.from_pandas(eval_df)
 
-# model_name = "jbochi/madlad400-3b-mt"
-model_name = "facebook/nllb-200-3.3B"
+model_name = "jbochi/madlad400-3b-mt"
 
 tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=256)
