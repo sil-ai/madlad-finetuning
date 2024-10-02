@@ -30,6 +30,7 @@ parser.add_argument("--dataset-id", type=str, help="ClearML dataset ID")
 parser.add_argument("--lora_r", type=int, help="LoRA r value", default=8)
 parser.add_argument("--lora-alpha", type=int, help="LoRA alpha value", default=32)
 parser.add_argument("--lora-dropout", type=float, help="LoRA dropout value", default=0.05)
+parser.add_argument("--data-aug", action="store_true", help="Augment with Word Correspondences dataset")
 
 args = parser.parse_args()
 
@@ -90,14 +91,17 @@ eval_df = df.iloc[split_idx:].reset_index(drop=True)
 # Load the Word Correspondences dataset
 wc_df = pd.read_csv(f"{base_path}/en-NASB-nih-NIH_top_source_scores_filtered.csv")
 
-# Append wc_df rows only to the training dataframe
-# train_df = pd.concat([train_df, wc_df[['source', 'target']]], ignore_index=True).sample(frac=1, random_state=42).reset_index(drop=True)
+if args.data_aug:
+    # Append wc_df rows only to the training dataframe
+    train_df = pd.concat([train_df, wc_df[['source', 'target']]], ignore_index=True).sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Convert dataframes to Hugging Face Datasets
 train_dataset = Dataset.from_pandas(train_df)
 eval_dataset = Dataset.from_pandas(eval_df)
 
-model_name = "jbochi/madlad400-3b-mt"
+# model_name = "jbochi/madlad400-3b-mt"
+model_name = "facebook/nllb-200-3.3B"
+
 tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=256)
 
