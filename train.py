@@ -69,7 +69,7 @@ df = pd.DataFrame(
     {
         "source": [line.strip() for line in source_sentences],
         "target": [line.strip() for line in target_sentences],
-        "index": vrefs,
+        "index": [vref.strip() for vref in vrefs],
     }
 )
 
@@ -108,8 +108,8 @@ eval_indices = unique_indices[split_idx:]
 train_df = df[df["index"].isin(train_indices)].reset_index(drop=True)
 eval_df = df[df["index"].isin(eval_indices)].reset_index(drop=True)
 
-print(f'{train_df.head(50)=}')
-print(f'{eval_df.head(50)=}')
+print(f'{train_df.sort_values("index").head(50)=}')
+print(f'{eval_df.sort_values("index").head(50)=}')
 
 # Load the Word Correspondences dataset
 wc_df = pd.read_csv(f"{base_path}/en-NASB-nih-NIH_top_source_scores_filtered.csv")
