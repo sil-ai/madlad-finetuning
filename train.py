@@ -56,6 +56,9 @@ if args.source_2:
     with open(source_file_2, "r", encoding="utf-8") as f:
         source_sentences_2 = f.readlines()
 
+with open('data/vref.txt', 'r', encoding='utf-8') as f:
+    vrefs = f.readlines()
+
 # Ensure both files have the same number of lines
 assert len(source_sentences) == len(
     target_sentences
@@ -66,6 +69,7 @@ df = pd.DataFrame(
     {
         "source": [line.strip() for line in source_sentences],
         "target": [line.strip() for line in target_sentences],
+        "index": vrefs,
     }
 )
 
@@ -76,7 +80,7 @@ if args.source_2:
         {
             "source": df["source"].tolist() + df["source_2"].tolist(),
             "target": df["target"].tolist() * 2,
-            "index": df.index.tolist() * 2,
+            "index": df['index'].tolist() * 2,
         }
     )
 
