@@ -72,13 +72,13 @@ df = pd.DataFrame(
 if args.source_2:
     df['source_2'] = [line.strip() for line in source_sentences_2]
 
-df = pd.DataFrame(
-    {
-        "source": df["source"].tolist() + df["source_2"].tolist(),
-        "target": df["target"].tolist() * 2,
-        "index": df.index.tolist() * 2,
-    }
-)
+    df = pd.DataFrame(
+        {
+            "source": df["source"].tolist() + df["source_2"].tolist(),
+            "target": df["target"].tolist() * 2,
+            "index": df.index.tolist() * 2,
+        }
+    )
 
 # Remove rows with empty source or target
 df = df[(df["source"] != "") & (df["target"] != "")]
