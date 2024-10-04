@@ -84,9 +84,6 @@ if args.source_2:
         }
     )
 
-# Remove rows with empty source or target
-df = df[(df["source"] != "") & (df["target"] != "")]
-
 # Find indices where either source or target is "<range>"
 to_drop = df[(df['source'] == '<range>') | (df['target'] == '<range>')].index
 
@@ -95,6 +92,9 @@ to_drop = to_drop.union(to_drop - 1)
 
 print(f"Drop {len(to_drop)} rows.")
 df = df.drop(to_drop)
+
+# Remove rows with empty source or target
+df = df[(df["source"] != "") & (df["target"] != "")]
 
 # Shuffle the DataFrame
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
