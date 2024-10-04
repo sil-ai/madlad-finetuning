@@ -94,6 +94,10 @@ to_drop = df[(df['source'] == '<range>') | (df['target'] == '<range>')].index
 to_drop = to_drop.union(to_drop - 1)
 
 print(f"Drop {len(to_drop)} rows.")
+df = df.drop(to_drop)
+
+# Shuffle the DataFrame
+df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Drop the rows
 unique_indices = df["index"].unique()
@@ -104,7 +108,7 @@ split_idx = int(0.9 * len(unique_indices))
 train_indices = unique_indices[:split_idx]
 eval_indices = unique_indices[split_idx:]
 
-# Use these indices to filter the DataFrame into train and eval sets
+# Use these indices to filter the DataFrame into train and eval sets, then shuffle
 train_df = df[df["index"].isin(train_indices)].reset_index(drop=True)
 eval_df = df[df["index"].isin(eval_indices)].reset_index(drop=True)
 
@@ -265,6 +269,8 @@ trainer = Seq2SeqTrainer(
 )
 
 trainer.train()
+
+
 # trainer.save_model(f"./madlad400-finetuned-{source_lang}-{target_lang}")
 # trainer.evaluate()
 # trainer.push_to_hub(f"sil-ai/madlad400-finetuned-{source_lang}-{target_lang}", private=True, token=HF_TOKEN)
