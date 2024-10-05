@@ -1,4 +1,4 @@
-import os
+import json
 import argparse
 from pathlib import Path
 from datasets import load_dataset, Dataset
@@ -9,6 +9,10 @@ from transformers import (
     Seq2SeqTrainingArguments,
     DataCollatorForSeq2Seq,
 )
+from tokenizers import Tokenizer
+from tokenizers.models import BPE
+from tokenizers.trainers import BpeTrainer
+from tokenizers.pre_tokenizers import Whitespace
 from peft import get_peft_model, LoraConfig, TaskType
 import pandas as pd
 import numpy as np
@@ -32,6 +36,7 @@ parser.add_argument("--lora_r", type=int, help="LoRA r value", default=8)
 parser.add_argument("--lora-alpha", type=int, help="LoRA alpha value", default=32)
 parser.add_argument("--lora-dropout", type=float, help="LoRA dropout value", default=0.05)
 parser.add_argument("--data-aug", action="store_true", help="Augment with Word Correspondences dataset")
+parser.add_argument("--tokenize", type=str, choices=["source", "target", "both"], help="Tokenize the dataset")
 
 args = parser.parse_args()
 
@@ -131,6 +136,29 @@ model_name = "jbochi/madlad400-3b-mt"
 tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=256)
 
+if args.tokenize:
+    tokenization_train_dataset = []
+    if args.tokenize in ["source", "both"]:
+        tokenization_train_dataset.append(source_file)
+    if args.tokenize in ["target", "both"]:
+        tokenization_train_dataset.append(target_file)
+    
+    bpe_tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
+    trainer = BpeTrainer(special_tokens=["[UNK]"], vocab_size=1000)
+    tokenizer.pre_tokenizer = Whitespace()
+    bpe_tokenizer.train(files=tokenization_train_dataset, trainer=trainer)
+    bpe_tokenizer.save_model(f"{base_path}/bpe_tokenizer.json")
+
+    with open(f"{base_path}/bpe_tokenizer.json", "r", encoding="utf-8") as f:
+        bpe_tokenizer_data = json.load(f)
+    
+    new_tokens = bpe_tokenizer_data["model"]["vocab"].keys()
+    existing_tokens = tokenizer.get_vocab().keys()
+    unique_new_tokens = [token for token in new_tokens if token not in existing_tokens]
+
+    tokenizer.add_tokens(unique_new_tokens)
+
+
 def text_is_in_vocab(tokenizer, text):
     tokens = tokenizer.tokenize(text)
     return len(tokens) == 2 and tokens[1] == text
@@ -145,7 +173,12 @@ language_token = f"<2{madlad_language_codes.get(target_lang, target_lang)}>"
 if not text_is_in_vocab(tokenizer, language_token):
     print(f"Adding {language_token} to the vocabulary.")
     tokenizer.add_tokens([language_token])
-    model.resize_token_embeddings(len(tokenizer))
+
+model.resize_token_embeddings(len(tokenizer))
+
+# Sample tokenization from first training example
+print(tokenizer(train_dataset[0]["source"]))
+print(tokenizer(train_dataset[0]["target"]))
 
 # Define LoRA configuration
 lora_config = LoraConfig(
