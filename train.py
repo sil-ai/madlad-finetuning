@@ -37,6 +37,9 @@ parser.add_argument("--lora-alpha", type=int, help="LoRA alpha value", default=3
 parser.add_argument("--lora-dropout", type=float, help="LoRA dropout value", default=0.05)
 parser.add_argument("--data-aug", action="store_true", help="Augment with Word Correspondences dataset")
 parser.add_argument("--tokenize", type=str, choices=["source", "target", "both"], help="Tokenize the dataset")
+parser.add_argument("--num-tokens", type=int, help="Number of tokens to add to the tokenizer", default=1000)
+parser.add_argument("--rslora", action="store_true", help="Use RSLora")
+
 
 args = parser.parse_args()
 
@@ -106,7 +109,7 @@ df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Drop the rows
 unique_indices = df["index"].unique()
-random.shuffle(unique_indices)  # Shuffle the indices for splitting
+random.Random(42).shuffle(unique_indices)  # Shuffle the indices for splitting
 
 # Split by index: 90% train, 10% eval
 split_idx = int(0.9 * len(unique_indices))
@@ -144,8 +147,8 @@ if args.tokenize:
         tokenization_train_dataset.append(target_file)
     
     bpe_tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
-    trainer = BpeTrainer(special_tokens=["[UNK]"], vocab_size=500)
-    # bpe_tokenizer.pre_tokenizer = Whitespace()
+    trainer = BpeTrainer(special_tokens=["[UNK]"], vocab_size=args.num_tokens)
+    bpe_tokenizer.pre_tokenizer = Whitespace()
     bpe_tokenizer.train(files=tokenization_train_dataset, trainer=trainer)
     bpe_tokenizer.save(f"{base_path}/bpe_tokenizer.json")
 
@@ -190,7 +193,7 @@ lora_config = LoraConfig(
     lora_alpha=args.lora_alpha,
     lora_dropout=args.lora_dropout,
     bias="none",
-    use_rslora=True,
+    use_rslora=args.rslora,
 )
 
 # Apply LoRA to the model
@@ -198,7 +201,6 @@ model = get_peft_model(model, lora_config)
 
 # Unfreeze additional parameters
 for name, param in model.named_parameters():
-    print(name)
     if "layer_norm" in name:
         param.requires_grad = True
 
