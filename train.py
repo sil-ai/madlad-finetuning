@@ -134,7 +134,7 @@ eval_dataset = Dataset.from_pandas(eval_df)
 model_name = "jbochi/madlad400-3b-mt"
 
 tokenizer = T5Tokenizer.from_pretrained(model_name)
-model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=256)
+model = T5ForConditionalGeneration.from_pretrained(model_name, max_length=128)
 
 if args.tokenize:
     tokenization_train_dataset = []
@@ -242,7 +242,7 @@ def preprocess_function(examples):
     model_inputs = tokenizer(
         inputs,
         text_target=targets,
-        max_length=256,
+        max_length=128,
         truncation=True,
         padding='longest',
     )
@@ -272,7 +272,7 @@ training_args = Seq2SeqTrainingArguments(
     warmup_steps=500,
     save_total_limit=2,
     predict_with_generate=True,
-    generation_max_length=256,
+    generation_max_length=128,
     metric_for_best_model='chrf',
     greater_is_better=True,
     load_best_model_at_end=True,
