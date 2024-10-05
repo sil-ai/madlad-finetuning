@@ -145,7 +145,7 @@ if args.tokenize:
     
     bpe_tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
     trainer = BpeTrainer(special_tokens=["[UNK]"], vocab_size=1000)
-    bpe_tokenizer.pre_tokenizer = Whitespace()
+    # bpe_tokenizer.pre_tokenizer = Whitespace()
     bpe_tokenizer.train(files=tokenization_train_dataset, trainer=trainer)
     bpe_tokenizer.save(f"{base_path}/bpe_tokenizer.json")
 
