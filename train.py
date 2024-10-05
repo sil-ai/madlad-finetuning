@@ -190,6 +190,7 @@ lora_config = LoraConfig(
     lora_alpha=args.lora_alpha,
     lora_dropout=args.lora_dropout,
     bias="none",
+    use_rslora=True,
 )
 
 # Apply LoRA to the model
