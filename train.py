@@ -102,7 +102,7 @@ print(f"Drop {len(to_drop)} rows.")
 df = df.drop(to_drop)
 
 # Remove rows with empty source or target
-df = df[(df["source"] != "") & (df["target"] != "")]
+df = df[(df["source"] != "") & (df["target"] != "") & (df["source"] != '...') & (df["target"] != '...')]
 
 # Shuffle the DataFrame
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
